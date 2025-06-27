@@ -15,6 +15,7 @@ from scipy.stats import norm
 from pulp import value
 from functions import *
 
+
 # File path
 file_path = 'Compute Rosters.xlsx'
 
@@ -31,19 +32,27 @@ RESTRICTED_FROM_TEAM.pop(0)
 RESTRICTED_FROM_TEAM = [item.title() for item in RESTRICTED_FROM_TEAM if isinstance(item, str) or not math.isnan(item)]
 RESTRICTED_FROM_TEAM = set(RESTRICTED_FROM_TEAM)
 
+checking_roster = False
+if __name__ != "__main__":
+    checking_roster = True
+    TEAM_MEMBERS = []
+    RESTRICTED_FROM_TEAM = []
+
+
 for person in TEAM_MEMBERS:
     if person in RESTRICTED_FROM_TEAM:
         raise Exception(f"{person} is in Team List and is also restricted")
 
 NO_SAME_PAIRS = team_info[:, 4].tolist()
 NO_SAME_PAIRS = NO_SAME_PAIRS[1]
-if 'T' in NO_SAME_PAIRS:
-    NO_SAME_PAIRS = False
-    print("Same partners on different events is allowed")
-else:
-    NO_SAME_PAIRS = True
-    print("Same partners on different events is not allowed")
-    print("This is ignored for three person events")
+if not checking_roster:
+    if 'T' in NO_SAME_PAIRS:
+        NO_SAME_PAIRS = False
+        print("Same partners on different events is allowed")
+    else:
+        NO_SAME_PAIRS = True
+        print("Same partners on different events is not allowed")
+        print("This is ignored for three person events")
 
 check_spelling = team_info[:, 6].tolist()
 if 'T' in check_spelling:
@@ -53,14 +62,16 @@ else:
     check_spelling = False
     print_red("Will not check spelling")
 
-MUST_INCLUDE = {}
-if 0 <= len(TEAM_MEMBERS) < 15:
-    MUST_INCLUDE = set(TEAM_MEMBERS)
-    print_red("Not enough people. Filling " + str(15 - len(TEAM_MEMBERS)) + " spot(s)")
-    TEAM_MEMBERS = []
 
-elif len(TEAM_MEMBERS) > 15:
-    print_red("Too many people, picking best 15")
+MUST_INCLUDE = {}
+if not checking_roster:
+    if 0 <= len(TEAM_MEMBERS) < 15:
+        MUST_INCLUDE = set(TEAM_MEMBERS)
+        print_red("Not enough people. Filling " + str(15 - len(TEAM_MEMBERS)) + " spot(s)")
+        TEAM_MEMBERS = []
+
+    elif len(TEAM_MEMBERS) > 15:
+        print_red("Too many people, picking best 15")
 
 schedule = team_info[1][7]
 print(f"Schedule: {schedule}")
@@ -144,11 +155,12 @@ extra_info = data_frame_to_np(extra_info_df)
 do_not_work_well_together = extra_info[:, 0:2].tolist()
 do_not_work_well_together.pop(0)
 do_not_work_well_together = [
-    [item[0].title(), item[1].title()]
+    tuple(sorted([item[0].title(), item[1].title()]))
     for item in do_not_work_well_together
     if (isinstance(item[0], str) or not math.isnan(item[0])) and
        (isinstance(item[1], str) or not math.isnan(item[1]))
 ]
+do_not_work_well_together = list(set(do_not_work_well_together))
 
 must_have_events = extra_info[:, 2:4].tolist()
 must_have_events.pop(0)
@@ -476,8 +488,15 @@ def get_people():
 
 
 # Create LP problem
+
 if 'T' in finetune[:, 2].tolist()[9]:
-    print_red("Creating worst possible team.")
+    if not checking_roster:
+        print_red("!!!!!Creating worst possible team!!!!!")
+        print_red("!!!!!Creating worst possible team!!!!!")
+        print_red("!!!!!Creating worst possible team!!!!!")
+        print_red("!!!!!Creating worst possible team!!!!!")
+        print_red("!!!!!Creating worst possible team!!!!!")
+
     prob = pulp.LpProblem("Maximize_Event_Assignment_Score", pulp.LpMinimize)
     time.sleep(1)
 else:
