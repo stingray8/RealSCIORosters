@@ -10,6 +10,8 @@ from tabulate import tabulate
 from functions import *
 from itertools import combinations
 from main import *
+with open("output.txt", "w"):
+    pass
 file_path = 'Compute Rosters.xlsx'
 
 team_df = pd.read_excel(file_path, sheet_name="Team")
@@ -100,8 +102,6 @@ for key in event_people:
         if not (len(event_people[key]) == 3 and key in events_with_three_people):
             print_red(key + " has " + str(len(event_people[key])) + " people")
 
-with open("output.txt", "w"):
-    pass
 
 do_not_work_well_together = set(do_not_work_well_together)
 for key in event_people:
