@@ -89,20 +89,28 @@ if not mistake:
 
 
 most_events = 4
+mistake = False
 for key in people_event:
     if len(people_event[key]) > most_events:
         print_red(key + " has " + str(len(people_event[key])) + " events")
+        mistake = True
 
 for key in event_people:
     if len(event_people[key]) < 2:
         print_red(key + " doesn't have enough people")
+        mistake = True
     elif len(event_people[key]) == 3 and key not in events_with_three_people:
         print_red(key + " has " + str(len(event_people[key])) + " people")
+        mistake = True
     elif len(event_people[key]) != 2:
         if not (len(event_people[key]) == 3 and key in events_with_three_people):
             print_red(key + " has " + str(len(event_people[key])) + " people")
+            mistake = True
 
+if not mistake:
+    print("Each event has right number of people")
 
+mistake = False
 do_not_work_well_together = set(do_not_work_well_together)
 for key in event_people:
     group = event_people[key]
@@ -110,3 +118,8 @@ for key in event_people:
     for pair in pairs:
         if tuple(sorted(pair)) in do_not_work_well_together:
             print_red(f"{pair} do not want to work together but are in {key}")
+            mistake = True
+
+if not mistake:
+    print("No partnership synergy issues")
+

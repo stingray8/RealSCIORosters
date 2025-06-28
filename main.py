@@ -811,17 +811,16 @@ def get_results(assignments, model_score=None, event_assignments=None):
 
     print(f"Execution time: {time.time() - start_time} seconds")
 
-    if not NO_SAME_PAIRS:
-        pair_to_events = {}
-        for event, assigned_people in event_assignments.items():
-            if len(assigned_people) == 2:
-                pair = tuple(sorted(assigned_people))
-                if pair not in pair_to_events:
-                    pair_to_events[pair] = []
-                pair_to_events[pair].append(event)
-        for pair, events_list in pair_to_events.items():
-            if len(events_list) > 1:
-                print(f"{pair[0]} and {pair[1]} on {len(events_list)} events: {', '.join(events_list)}")
+    pair_to_events = {}
+    for event, assigned_people in event_assignments.items():
+        if len(assigned_people) == 2:
+            pair = tuple(sorted(assigned_people))
+            if pair not in pair_to_events:
+                pair_to_events[pair] = []
+            pair_to_events[pair].append(event)
+    for pair, events_list in pair_to_events.items():
+        if len(events_list) > 1:
+            print(f"{pair[0]} and {pair[1]} on {len(events_list)} events: {', '.join(events_list)}")
 
     # Calculate and print how many "should work together" pairs were actually assigned together
 
