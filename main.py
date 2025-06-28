@@ -15,7 +15,6 @@ from scipy.stats import norm
 from pulp import value
 from functions import *
 
-
 # File path
 file_path = 'Compute Rosters.xlsx'
 
@@ -38,13 +37,11 @@ if __name__ != "__main__":
     TEAM_MEMBERS = []
     RESTRICTED_FROM_TEAM = []
 
-
 for person in TEAM_MEMBERS:
     if person in RESTRICTED_FROM_TEAM:
         raise Exception(f"{person} is in Team List and is also restricted")
 
-NO_SAME_PAIRS = team_info[:, 4].tolist()
-NO_SAME_PAIRS = NO_SAME_PAIRS[1]
+NO_SAME_PAIRS = team_info[:, 4][1]
 if not checking_roster:
     if 'T' in NO_SAME_PAIRS:
         NO_SAME_PAIRS = False
@@ -54,14 +51,13 @@ if not checking_roster:
         print("Same partners on different events is not allowed")
         print("This is ignored for three person events")
 
-check_spelling = team_info[:, 6].tolist()
+check_spelling = team_info[:, 6][1]
 if 'T' in check_spelling:
     check_spelling = True
     print("Checking spelling")
 else:
     check_spelling = False
     print_red("Will not check spelling")
-
 
 MUST_INCLUDE = {}
 if not checking_roster:
@@ -133,9 +129,6 @@ try:
 except ValueError:
     raise Exception("Schedule sheet not found.")
 
-print_logs = 'T' in team_info[1][8]
-print(f"printing logs == {print_logs}")
-
 time_conflicts_df = time_conflicts_df.replace('nan', np.nan)
 time_conflicts = data_frame_to_np(time_conflicts_df)
 time_conflicts = [[item for item in row if not pd.isna(item)] for row in time_conflicts]
@@ -184,7 +177,6 @@ people_cannot_event = [
     if isinstance(item[0], str) or not math.isnan(item[0])
 ]
 
-
 # Process "Should Work Together"
 work_together = extra_info[:, 7:9].tolist()
 work_together.pop(0)  # Remove header
@@ -198,6 +190,14 @@ if 'T' in finetune[:, 6][1]:
     print("Normalizing event ratings to have same mean=5")
 else:
     print_red("Not normalizing event ratings to have same mean")
+
+print_logs = team_info[:, 10].tolist()
+print_logs.pop(0)
+print_logs = [True if char == 'T' else False for char in print_logs]
+
+for index, p in enumerate(print_logs):
+    if p:
+        print(f"Printing logs for {team_info[:, 9][index + 1].lower()}")
 
 
 class Person:
@@ -237,7 +237,9 @@ class Person:
 
     def __str__(self):
         ratings_str = ", ".join([f"{event}: {self.ratings[event]}" for event in self.events])
-        return f"Name: {self.name, self.age}\nEvents and Ratings:\n{ratings_str}"
+        old_rating_str = ", ".join([f"{event}: {self.original_ratings[event]}" for event in self.events])
+        print(sum(self.ratings.values()) / len(events))
+        return f"\nName: {self.name, self.age}\nOriginal Ratings\n{old_rating_str}\nAdjusted Ratings:\n{ratings_str}\nMean changed from {sum(self.original_ratings.values()) / len(events)} to {sum(self.ratings.values()) / len(events)}\n"
 
 
 # Build the People List
@@ -245,7 +247,7 @@ people = []
 people_dict = {}
 all_people_set = set()
 
-names = [row[0] for row in event_ratings]
+names = [row[0].title() for row in event_ratings]
 
 print("------")
 
@@ -263,6 +265,9 @@ for row in event_ratings:
         person = Person(row, events)
         people.append(person)
         people_dict[name] = person
+if print_logs[3]:
+    for p in people:
+        print(p)
 
 num_people = len(people)
 
@@ -386,14 +391,17 @@ while i < len(past_performance):
         for event_key in person_name.ratings.keys():
             try:
                 if event_to_category[event_key] == event_to_category[past_performance[i][1]] and not event_key == \
-                                            past_performance[i][1] and not event_to_category[event_key] == "Extra":
-                    if print_logs:
-                        print(past_performance[i])
+                                                                                                     past_performance[
+                                                                                                         i][1] and not \
+                        event_to_category[event_key] == "Extra":
+                    if print_logs[0]:
+                        print(*past_performance[i])
                         print(f"Same category as {event_key}. Current rating is {person_name.ratings[event_key]}")
-                    person_name.ratings[event_key] += max(0, find_placement_score(past_performance[i][2]) * \
+                    person_name.ratings[event_key] += max(0, find_placement_score(past_performance[i][2],
+                                                                                  multiplier=finetune[:, 0][9]) * \
                                                           finetune[:, 5].tolist()[1] * past_performance[i][3])
                     person_name.ratings[event_key] = round(person_name.ratings[event_key], 2)
-                    if print_logs:
+                    if print_logs[0]:
                         print(f"New rating is {person_name.ratings[event_key]} \n")
             except KeyError as e:
                 raise Exception(f"KeyError: Missing event '{e.args[0]}' in event categories")
@@ -404,7 +412,7 @@ while i < len(past_performance):
             reason = "Not in people list"
         else:
             reason = "Event not in event list"
-        if print_logs:
+        if print_logs[1]:
             print(f"Removed from past_performance: {past_performance[i]} {reason}")
 
         past_performance.pop(i)
@@ -447,8 +455,9 @@ else:
 # Adjust Ratings from Past Performance
 
 highest_score_counted = finetune[:, 2].tolist()[1]
-current_year = team_info[:, 9].tolist()[1]
+current_year = team_info[:, 8].tolist()[1]
 
+print("\n")
 checked = []
 for past in reversed(past_performance):
     person_name, event_name, skill_level, weight, year = past
@@ -462,17 +471,29 @@ for past in reversed(past_performance):
         person = people_dict[person_name]
         current_rating = person.get_event_rating(event_name)
         if year >= current_year - 1 and (person_name, event_name) not in checked:
-            new_rating = current_rating + (weight * find_placement_score(skill_level))
-
+            new_rating = current_rating + (weight * find_placement_score(skill_level, multiplier=finetune[:, 0][9]))
         else:
-            new_rating = current_rating + (finetune[:, 1].tolist()[1] * (weight * find_placement_score(skill_level)))
-
+            new_rating = current_rating + (finetune[:, 1].tolist()[1] * (
+                    weight * find_placement_score(skill_level, multiplier=finetune[:, 0][9])))
+        new_rating = round(new_rating, 3)
+        if print_logs[2]:
+            print(f"{person_name} in {event_name} placed {skill_level} in {year} at a tournament weight of {weight}")
+            print(
+                f"Placement score of {skill_level} was converted to {find_placement_score(skill_level, multiplier=finetune[:, 0][9])}")
+            print(
+                f"Original score was {current_rating} and now is {new_rating} with a difference of {round(new_rating - current_rating, 3)}")
+            if year >= current_year - 1 and (person_name, event_name) not in checked:
+                print(
+                    f"{weight} * {find_placement_score(skill_level, multiplier=finetune[:, 0][9])} = {round(new_rating - current_rating, 3)}")
+            else:
+                if (person_name, event_name) in checked:
+                    print(f"This event was already factored in the past")
+                print(
+                    f"{finetune[:, 1].tolist()[1]} * {weight} * {find_placement_score(skill_level, multiplier=finetune[:, 0][9])} = {round(new_rating - current_rating, 3)}")
+            print("\n")
         person.replace_event_rating(event_name, new_rating)
         checked.append((person_name, event_name))
 
-if print_logs:
-    for p in people:
-        print(p)
 # Create Mappings for the Optimization Model
 event_to_index = {event: idx for idx, event in enumerate(events)}
 index_to_event = {idx: event for event, idx in event_to_index.items()}
@@ -656,7 +677,7 @@ for person_name in people_with_three:
 def solve():
     # Solve the Model
     print("Solving")
-    prob.solve(PULP_CBC_CMD(msg=print_logs))
+    prob.solve(PULP_CBC_CMD(msg=print_logs[4]))
     model_score = value(prob.objective)
     with open("output.txt", "w"):
         pass
@@ -843,8 +864,7 @@ def get_results(assignments, model_score=None, event_assignments=None):
     for i in range(len(event_assignments)):
         for j in range(len(event_assignments[i])):
             square = columns[j + 5] + str(i + 2)
-
-            sheet[square].value = event_assignments[i][j]
+            sheet[square] = event_assignments[i][j]
 
     try:
         workbook.save(file_path)

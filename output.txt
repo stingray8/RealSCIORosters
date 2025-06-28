@@ -1,0 +1,92 @@
+Status: Optimal
+Assignments:
+---------------  --------------------  -------------------  -------------------  -------------
+Aadhya Vijil     Boomilever            Disease Detectives   Machines
+Albert Huang     Bungee Drop           Machines             Materials Science
+Anya Gunnar      Boomilever            Circuit Lab          Entomology
+Benjamin Harris  Bungee Drop           Engineering Cad      Materials Science
+Brady Wang       Designer Genes        Disease Detectives   Forensics
+Cindy Chen       Chemistry Lab         Codebusters          Remote Sensing
+Edward Yang      Codebusters           Experimental Design  Helicopter           Hovercraft
+Lasya Hota       Designer Genes        Rocks & Minerals     Water Quality
+Nevin Wildstrom  Anatomy & Physiology  Entomology           Forensics
+Olivia Regan     Anatomy & Physiology  Dynamic Planet       Experimental Design  Water Quality
+Rudolf Tseng     Astronomy             Engineering Cad      Hovercraft
+Srihaan Seelam   Dynamic Planet        Electric Vehicle     Experimental Design  Robot Tour
+Thomas Gorkin    Astronomy             Robot Tour           Rocks & Minerals
+Tingray Chung    Chemistry Lab         Circuit Lab          Remote Sensing
+Zachary Gibbs    Codebusters           Electric Vehicle     Helicopter
+---------------  --------------------  -------------------  -------------------  -------------
+
+Event Assignments:
+Event                 Person 1         Person 2         Person 3
+--------------------  ---------------  ---------------  ------------
+Anatomy & Physiology  Nevin Wildstrom  Olivia Regan
+Astronomy             Thomas Gorkin    Rudolf Tseng
+Boomilever            Anya Gunnar      Aadhya Vijil
+Bungee Drop           Albert Huang     Benjamin Harris
+Chemistry Lab         Cindy Chen       Tingray Chung
+Circuit Lab           Anya Gunnar      Tingray Chung
+Codebusters           Cindy Chen       Zachary Gibbs    Edward Yang
+Designer Genes        Brady Wang       Lasya Hota
+Disease Detectives    Brady Wang       Aadhya Vijil
+Dynamic Planet        Srihaan Seelam   Olivia Regan
+Electric Vehicle      Srihaan Seelam   Zachary Gibbs
+Engineering Cad       Rudolf Tseng     Benjamin Harris
+Entomology            Anya Gunnar      Nevin Wildstrom
+Experimental Design   Srihaan Seelam   Edward Yang      Olivia Regan
+Forensics             Brady Wang       Nevin Wildstrom
+Helicopter            Zachary Gibbs    Edward Yang
+Hovercraft            Rudolf Tseng     Edward Yang
+Machines              Albert Huang     Aadhya Vijil
+Materials Science     Albert Huang     Benjamin Harris
+Remote Sensing        Cindy Chen       Tingray Chung
+Robot Tour            Srihaan Seelam   Thomas Gorkin
+Rocks & Minerals      Thomas Gorkin    Lasya Hota
+Water Quality         Lasya Hota       Olivia Regan
+
+Event Assignments with scores:
+Event                 Person 1         Person 2         Person 3        Avg. orig. score    Avg. adj. score
+--------------------  ---------------  ---------------  ------------  ------------------  -----------------
+Anatomy & Physiology  Nevin Wildstrom  Olivia Regan                             10                  27.5535
+Astronomy             Thomas Gorkin    Rudolf Tseng                              7                  13.1005
+Boomilever            Anya Gunnar      Aadhya Vijil                              4.5                 6.177
+Bungee Drop           Albert Huang     Benjamin Harris                           4                  35.581
+Chemistry Lab         Cindy Chen       Tingray Chung                             9.5                16.86
+Circuit Lab           Anya Gunnar      Tingray Chung                             9                  11.247
+Codebusters           Cindy Chen       Zachary Gibbs    Edward Yang              9.33333            15.4427
+Designer Genes        Brady Wang       Lasya Hota                                9                  11.215
+Disease Detectives    Brady Wang       Aadhya Vijil                             10                  22.5405
+Dynamic Planet        Srihaan Seelam   Olivia Regan                              8.5                23.084
+Electric Vehicle      Srihaan Seelam   Zachary Gibbs                             9                  21.7055
+Engineering Cad       Rudolf Tseng     Benjamin Harris                           9                  20.799
+Entomology            Anya Gunnar      Nevin Wildstrom                          10                  15.625
+Experimental Design   Srihaan Seelam   Edward Yang      Olivia Regan             8.66667            22.4323
+Forensics             Brady Wang       Nevin Wildstrom                           8                  12.591
+Helicopter            Zachary Gibbs    Edward Yang                              10                  21.4255
+Hovercraft            Rudolf Tseng     Edward Yang                               8.5                11.4
+Machines              Albert Huang     Aadhya Vijil                              5                   9.725
+Materials Science     Albert Huang     Benjamin Harris                           3                  31.386
+Remote Sensing        Cindy Chen       Tingray Chung                             5                   7.7
+Robot Tour            Srihaan Seelam   Thomas Gorkin                             8.5                20.31
+Rocks & Minerals      Thomas Gorkin    Lasya Hota                                7                   8.775
+Water Quality         Lasya Hota       Olivia Regan                              9                  10.235
+
+Individual Stats with Event Details:
+Name               Happiness    Score  Event1                             Event2                           Event3                           Event 4
+---------------  -----------  -------  ---------------------------------  -------------------------------  -------------------------------  --------------------------
+Aadhya Vijil            7.33    11.1   Disease Detectives (10, 20.002)    Machines (10, 10.0)              Boomilever (2, 3.284)
+Albert Huang            0       24.52  Bungee Drop (0, 33.501)            Machines (0, 9.45)               Materials Science (0, 30.6)
+Anya Gunnar             8.33    11.51  Entomology (10, 16.86)             Circuit Lab (8, 8.614)           Boomilever (7, 9.07)
+Benjamin Harris         7.33    30.21  Bungee Drop (8, 37.661)            Engineering Cad (8, 20.799)      Materials Science (6, 32.172)
+Brady Wang              8.67    17.4   Disease Detectives (10, 25.079)    Designer Genes (8, 11.86)        Forensics (8, 15.27)
+Cindy Chen              7       14.25  Chemistry Lab (9, 16.86)           Codebusters (9, 19.561)          Remote Sensing (3, 6.33)
+Edward Yang             8.25    17.81  Helicopter (10, 24.731)            Codebusters (9, 15.86)           Experimental Design (7, 21.58)   Hovercraft (7, 9.07)
+Lasya Hota              9.33    10.39  Designer Genes (10, 10.57)         Rocks & Minerals (10, 10.66)     Water Quality (8, 9.94)
+Nevin Wildstrom         9.33    17.87  Anatomy & Physiology (10, 29.302)  Entomology (10, 14.39)           Forensics (8, 9.912)
+Olivia Regan            9.25    20.38  Anatomy & Physiology (10, 25.805)  Water Quality (10, 10.53)        Experimental Design (9, 21.697)  Dynamic Planet (8, 23.498)
+Rudolf Tseng           10       17.55  Astronomy (10, 18.108)             Engineering Cad (10, 20.799)     Hovercraft (10, 13.73)
+Srihaan Seelam          9       21.24  Electric Vehicle (10, 22.071)      Experimental Design (10, 24.02)  Dynamic Planet (9, 22.67)        Robot Tour (7, 16.21)
+Thomas Gorkin           6       13.13  Robot Tour (10, 24.41)             Astronomy (4, 8.093)             Rocks & Minerals (4, 6.89)
+Tingray Chung           9       13.27  Chemistry Lab (10, 16.86)          Circuit Lab (10, 13.88)          Remote Sensing (7, 9.07)
+Zachary Gibbs           9.33    16.79  Codebusters (10, 10.907)           Helicopter (10, 18.12)           Electric Vehicle (8, 21.34)
