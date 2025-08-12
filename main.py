@@ -15,6 +15,7 @@ from scipy.stats import norm
 from pulp import value
 from functions import *
 import gc
+
 gc.enable()
 
 # File path
@@ -178,7 +179,6 @@ people_cannot_event = [
     if isinstance(item[0], str) or not math.isnan(item[0])
 ]
 
-
 # Process "Should Work Together"
 work_together = extra_info[:, 11:13].tolist()
 work_together.pop(0)  # Remove header
@@ -221,7 +221,6 @@ event_exceptions = [
     for item in event_exceptions
     if isinstance(item[0], str) and isinstance(item[1], str)
 ]
-
 
 if 'T' in finetune[:, 6][1]:
     print("Normalizing event ratings to have same mean=5")
@@ -294,7 +293,6 @@ for row in event_ratings:
         people_dict[name] = person
 
 num_people = len(people)
-
 
 if check_spelling:
     spelling_threshold = int(finetune[:, 3].tolist()[1])
@@ -398,10 +396,9 @@ if check_spelling:
                 print_red(
                     f"Possible spelling inconsistency in people restricted from categories: '{pair[1]}' and category name '{category[0]}'")
 
-
 event_exceptions = set(event_exceptions)
-for p,e in people_cannot_event:
-    if (p,e) in event_exceptions:
+for p, e in people_cannot_event:
+    if (p, e) in event_exceptions:
         raise Exception(f"{p} in event {e} in both event restricted (not category) and event exception")
 
 set_people_cannot_event = set(people_cannot_event)
@@ -410,8 +407,9 @@ for row in people_cannot_category:
     e = row[1]
     try:
         for i in range(len(category_to_events[e])):
-                if ((p, category_to_events[e][i]) not in event_exceptions) and ((p, category_to_events[e][i]) not in set_people_cannot_event):
-                    people_cannot_event.append((p, category_to_events[e][i]))
+            if ((p, category_to_events[e][i]) not in event_exceptions) and (
+                    (p, category_to_events[e][i]) not in set_people_cannot_event):
+                people_cannot_event.append((p, category_to_events[e][i]))
     except KeyError as err:
         print_red(f"There are spelling errors for {e} in people restricted from category for person {p}")
         print_red("\tSkipping restriction for now")
@@ -432,7 +430,6 @@ work_together = [pair for pair in work_together if pair[0] in people_dict and pa
 
 people_cannot_event = [item for item in people_cannot_event if item[0] in people_dict]
 
-
 # Set up name_age
 name_age = [item for item in name_age if item[0] in people_dict]
 for pair in name_age:
@@ -448,7 +445,9 @@ while i < len(past_performance):
         for event_key in person_name.ratings.keys():
             try:
                 if event_to_category[event_key] == event_to_category[past_performance[i][1]] and not event_key == \
-                                            past_performance[i][1] and not event_to_category[event_key] == "Extra":
+                                                                                                     past_performance[
+                                                                                                         i][1] and not \
+                event_to_category[event_key] == "Extra":
                     if print_logs:
                         print(past_performance[i])
                         print(f"Same category as {event_key}. Current rating is {person_name.ratings[event_key]}")
@@ -505,8 +504,6 @@ if work_together_bonus_weight != 0:
     work_together = filtered
 else:
     work_together = []
-
-
 
 highest_score_counted = finetune[:, 2].tolist()[1]
 current_year = team_info[:, 9].tolist()[1]
@@ -581,10 +578,9 @@ else:
 objective = pulp.lpSum(people[i].get_all_scores()[j] * x[i][j]
                        for i in range(num_people) for j in range(num_events))
 
-
 min_preference_score = finetune[:, 3].tolist()[9]
 if str(min_preference_score) == 'nan':
-    min_preference_score=0
+    min_preference_score = 0
     print_red("No minimum preference score set. Defaulting to 0")
 
 for i in range(num_people):
@@ -600,7 +596,6 @@ if str(MIN_EVENT_SCORE) == 'nan':
 for j in range(num_events):
     prob += pulp.lpSum(people[i].get_event_rating(index_to_event[j]) * x[i][j]
                        for i in range(num_people)) >= MIN_EVENT_SCORE, f"MinScore_{j}"
-
 
 z = pulp.LpVariable.dicts("work_together_bonus",
                           [(person_to_index[p1], person_to_index[p2], j)
