@@ -15,7 +15,6 @@ from scipy.stats import norm
 from pulp import value
 from functions import *
 import gc
-
 gc.enable()
 
 # File path
