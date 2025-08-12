@@ -44,7 +44,6 @@ def normalize_ratings(data, desired_mean=5.0, value_range=(1, 10)):
     adjusted = [round(x, 3) for x in adjusted]
     return adjusted
 
-
 def find_placement_score(rank, num_teams=60, multiplier=30, mean=.5704, std_dev=.22,
                          min_percentile=0.01,
                          max_percentile=0.99):
