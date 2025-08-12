@@ -76,5 +76,3 @@ def reverse_placement_score(output, num_teams=60, multiplier=30, mean=0.5704, st
     rank = 1 + (max_percentile - percentile) / (max_percentile - min_percentile) * (num_teams - 1)
 
     return round(rank)
-
-
