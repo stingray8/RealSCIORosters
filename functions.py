@@ -31,15 +31,17 @@ def normalize_ratings(data, desired_mean=5.0, value_range=(1, 10)):
     adjusted = data + shift_value
 
     adjusted = np.clip(adjusted, min_val, max_val)
-
     final_mean = np.mean(adjusted)
-    if final_mean != desired_mean:
-        fine_tune_diff = desired_mean - final_mean
-        adjusted += fine_tune_diff
-        adjusted = np.clip(adjusted, min_val, max_val)
+    for i in range(5):
+        if final_mean != desired_mean:
+            fine_tune_diff = desired_mean - final_mean
+            adjusted += fine_tune_diff
+            adjusted = np.clip(adjusted, min_val, max_val)
+        final_mean = np.mean(adjusted)
+        if abs(final_mean - desired_mean) < .05:
+            break
     adjusted = adjusted.tolist()
     adjusted = [round(x, 3) for x in adjusted]
-
     return adjusted
 
 

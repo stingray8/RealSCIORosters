@@ -14,6 +14,8 @@ import Levenshtein
 from scipy.stats import norm
 from pulp import value
 from functions import *
+import gc
+gc.enable()
 
 # File path
 file_path = 'Compute Rosters.xlsx'
@@ -23,6 +25,7 @@ team_info = data_frame_to_np(team_df)
 TEAM_MEMBERS = team_info[:, 0].tolist()
 TEAM_MEMBERS.pop(0)
 TEAM_MEMBERS = [item.title() for item in TEAM_MEMBERS if isinstance(item, str) or not math.isnan(item)]
+del team_df
 
 # If TEAM_MEMBERS is full, only those people will be used.
 # If TEAM_MEMBERS is partially full, the algorithm will pick the next best people.
@@ -77,6 +80,7 @@ name_age = [
 # Read event ratings
 event_ratings_df = pd.read_excel(file_path, sheet_name="Event Ratings")
 event_ratings = data_frame_to_np(event_ratings_df).tolist()
+del event_ratings_df
 events = event_ratings[0]
 # Remove the first element (assumed to be a label like "Name")
 events.pop(0)
@@ -88,6 +92,7 @@ num_events = len(events)
 # Read past performance data
 past_performance_df = pd.read_excel(file_path, sheet_name="Past Performance")
 past_performance = data_frame_to_np(past_performance_df).tolist()
+del past_performance_df
 past_performance.pop(0)
 past_performance = [
     [str(item[0]).title(), str(item[1]).title(), *item[2:]]  # Title case first two columns, keep rest unchanged
@@ -115,6 +120,7 @@ for i in range(len(past_performance)):
         past_performance[i].insert(3, tournament_weights[4])
     elif not math.isnan(past_performance[i][8]):  # High Nationals
         past_performance[i].insert(3, tournament_weights[5])
+del tournament_weights
 past_performance = [row[:4] + [row[10]] for row in past_performance]
 # Read time conflicts
 try:
@@ -174,13 +180,48 @@ people_cannot_event = [
 
 
 # Process "Should Work Together"
-work_together = extra_info[:, 7:9].tolist()
+work_together = extra_info[:, 11:13].tolist()
 work_together.pop(0)  # Remove header
 work_together = [
     tuple([item[0].title(), item[1].title()])
     for item in work_together
     if isinstance(item[0], str) and isinstance(item[1], str)
 ]
+
+people_cannot_category = extra_info[:, 7:9].tolist()
+people_cannot_category.pop(0)  # Remove header
+people_cannot_category = [
+    tuple([item[0].title(), item[1].title()])
+    for item in people_cannot_category
+    if isinstance(item[0], str) and isinstance(item[1], str)
+]
+
+event_to_category = dict()
+category_to_events = dict()
+category_info = pd.read_excel(file_path, sheet_name="Event Categories")
+category_info = data_frame_to_np(category_info)
+category_info = category_info.T
+for c in range(len(category_info)):
+    for a in range(len(category_info[c])):
+        category_info[c][a] = str(category_info[c][a]).title()
+
+for row in category_info:
+    row = row.tolist()
+    section = row[0]
+    category_to_events[section] = []
+    for i in range(1, len(row)):
+        if not row[i] == "Nan":
+            event_to_category[row[i]] = section
+            category_to_events[section].append(row[i])
+
+event_exceptions = extra_info[:, 9:11].tolist()
+event_exceptions.pop(0)  # Remove header
+event_exceptions = [
+    tuple([item[0].title(), item[1].title()])
+    for item in event_exceptions
+    if isinstance(item[0], str) and isinstance(item[1], str)
+]
+
 
 if 'T' in finetune[:, 6][1]:
     print("Normalizing event ratings to have same mean=5")
@@ -254,22 +295,6 @@ for row in event_ratings:
 
 num_people = len(people)
 
-event_to_category = dict()
-category_info = pd.read_excel(file_path, sheet_name="Event Categories")
-category_info = data_frame_to_np(category_info)
-category_info = category_info.T
-
-for c in range(len(category_info)):
-    for a in range(len(category_info[c])):
-        category_info[c][a] = str(category_info[c][a]).title()
-
-for row in category_info:
-    row = row.tolist()
-
-    section = row[0]
-    for i in range(1, len(row)):
-        if not row[i] == "Nan":
-            event_to_category[row[i]] = section
 
 if check_spelling:
     spelling_threshold = int(finetune[:, 3].tolist()[1])
@@ -321,6 +346,14 @@ if check_spelling:
         for pair in name_age:
             if pair[0] != name and calculate_string_similarity(pair[0], name) > spelling_threshold:
                 print_red(f"Possible spelling inconsistency in name age columns: '{pair[0]}' and form name '{name}'")
+        for pair in people_cannot_category:
+            if pair[0] != name and calculate_string_similarity(pair[0], name) > spelling_threshold:
+                print_red(
+                    f"Possible spelling inconsistency in people restricted from events: '{pair[0]}' and form name '{name}'")
+        for pair in event_exceptions:
+            if pair[0] != name and calculate_string_similarity(pair[0], name) > spelling_threshold:
+                print_red(
+                    f"Possible spelling inconsistency in people restricted from events: '{pair[0]}' and form name '{name}'")
 
     print("Checking for event name mistakes...")
     for event in events:
@@ -350,6 +383,44 @@ if check_spelling:
                 e = str(e)
                 if e != event and calculate_string_similarity(e, event) > spelling_threshold:
                     print_red(f"Possible spelling inconsistency in event categories: '{e}' and form name '{event}'")
+        for pair in people_cannot_category:
+            if pair[1] != event and calculate_string_similarity(pair[1], event) > spelling_threshold:
+                print_red(
+                    f"Possible spelling inconsistency in people restricted from category: '{pair[0]}' and form name '{name}'")
+        for pair in event_exceptions:
+            if pair[1] != event and calculate_string_similarity(pair[1], event) > spelling_threshold:
+                print_red(
+                    f"Possible spelling inconsistency in people-event exceptions: '{pair[0]}' and form name '{name}'")
+
+    for category in category_info:
+        for pair in people_cannot_category:
+            if pair[1] != category[0] and calculate_string_similarity(pair[1], category[0]) > spelling_threshold:
+                print_red(
+                    f"Possible spelling inconsistency in people restricted from categories: '{pair[1]}' and category name '{category[0]}'")
+
+
+event_exceptions = set(event_exceptions)
+for p,e in people_cannot_event:
+    if (p,e) in event_exceptions:
+        raise Exception(f"{p} in event {e} in both event restricted (not category) and event exception")
+
+set_people_cannot_event = set(people_cannot_event)
+for row in people_cannot_category:
+    p = row[0]
+    e = row[1]
+    try:
+        for i in range(len(category_to_events[e])):
+                if ((p, category_to_events[e][i]) not in event_exceptions) and ((p, category_to_events[e][i]) not in set_people_cannot_event):
+                    people_cannot_event.append((p, category_to_events[e][i]))
+    except KeyError as err:
+        print_red(f"There are spelling errors for {e} in people restricted from category for person {p}")
+        print_red("\tSkipping restriction for now")
+
+del event_exceptions
+del set_people_cannot_event
+del category_to_events
+
+gc.collect()
 
 print("Cleaning lists...")
 # Clean Up Constraint Lists
@@ -358,6 +429,9 @@ people_with_three = [item for item in people_with_three if item in people_dict]
 do_not_work_well_together = [pair for pair in do_not_work_well_together if
                              pair[0] in people_dict and pair[1] in people_dict]
 work_together = [pair for pair in work_together if pair[0] in people_dict and pair[1] in people_dict]
+
+people_cannot_event = [item for item in people_cannot_event if item[0] in people_dict]
+
 
 # Set up name_age
 name_age = [item for item in name_age if item[0] in people_dict]
@@ -432,7 +506,7 @@ if work_together_bonus_weight != 0:
 else:
     work_together = []
 
-# Adjust Ratings from Past Performance
+
 
 highest_score_counted = finetune[:, 2].tolist()[1]
 current_year = team_info[:, 9].tolist()[1]
@@ -454,10 +528,11 @@ for past in reversed(past_performance):
 
         else:
             new_rating = current_rating + (finetune[:, 1].tolist()[1] * (weight * find_placement_score(skill_level)))
-
+        if find_placement_score(1) * weight + 10 < new_rating:
+            new_rating = find_placement_score(1) * weight + 10
         person.replace_event_rating(event_name, new_rating)
         checked.append((person_name, event_name))
-
+del past_performance
 if print_logs:
     for p in people:
         print(p)
@@ -501,8 +576,31 @@ else:
 
 # Objective Function
 # Base score from event ratings
+
+
 objective = pulp.lpSum(people[i].get_all_scores()[j] * x[i][j]
                        for i in range(num_people) for j in range(num_events))
+
+
+min_preference_score = finetune[:, 3].tolist()[9]
+if str(min_preference_score) == 'nan':
+    min_preference_score=0
+    print_red("No minimum preference score set. Defaulting to 0")
+
+for i in range(num_people):
+    for j in range(num_events):
+        if people[i].get_original_rating(index_to_event[j]) < min_preference_score:
+            prob += x[i][j] == 0, f"No_Low_Score2_{i}_{j}"
+
+MIN_EVENT_SCORE = finetune[:, 4].tolist()[9]
+if str(MIN_EVENT_SCORE) == 'nan':
+    MIN_EVENT_SCORE = 0
+    print_red("No minimum preference score set. Defaulting to 0")
+
+for j in range(num_events):
+    prob += pulp.lpSum(people[i].get_event_rating(index_to_event[j]) * x[i][j]
+                       for i in range(num_people)) >= MIN_EVENT_SCORE, f"MinScore_{j}"
+
 
 z = pulp.LpVariable.dicts("work_together_bonus",
                           [(person_to_index[p1], person_to_index[p2], j)
@@ -836,3 +934,5 @@ def get_results(assignments, model_score=None, event_assignments=None):
 
 if __name__ == "__main__":
     solve()
+    if print_logs:
+        print(gc.get_stats())
